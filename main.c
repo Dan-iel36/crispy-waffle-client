@@ -23,8 +23,8 @@ int main() {
     struct job myjob;
     char printer[16];
     int userPrinter;
-    int pages ;
-    int priority ;
+    int pages;
+    int priority;
     int rest = 0;
 
     char *ipArray[4];
@@ -35,15 +35,15 @@ int main() {
 
     printf("select printer 1 - 3. 0 exists the program \n");
     scanf("%d", &userPrinter);
-    if(userPrinter == 0){
+    if (userPrinter == 0) {
         printf("app outed");
-    } else if (userPrinter == 1){
+    } else if (userPrinter == 1) {
         strcpy(printer, ipArray[1]);
-    } else if (userPrinter == 2){
+    } else if (userPrinter == 2) {
         strcpy(printer, ipArray[2]);
-    }else if (userPrinter == 3){
+    } else if (userPrinter == 3) {
         strcpy(printer, ipArray[3]);
-    }else{
+    } else {
         printf("something went wrong not sure what but pls restart O__- \n");
     }
     printf("%s \n", printer);
@@ -51,11 +51,11 @@ int main() {
 
     printf("select number of pages 1 - 10. 0 exists the program \n");
     scanf("%d", &pages);
-    if(pages == 0){
+    if (pages == 0) {
         printf("app outed \n");
-    } else if (pages >= 1 && pages <=10 ){
+    } else if (pages >= 1 && pages <= 10) {
         pages = pages;
-    } else{
+    } else {
         printf("something went wrong not sure what but pls restart O__- \n");
     }
     printf("%d \n", pages);
@@ -63,17 +63,18 @@ int main() {
 
     printf("select priority of pages 1 - 2. 0 exists the program \n");
     scanf("%d", &priority);
-    if(priority == 0){
+    if (priority == 0) {
         printf("app outed \n");
-    } else if (priority > 0 && priority < 3 ){
+    } else if (priority > 0 && priority < 3) {
         priority = priority;
-    } else{
+    } else {
         printf("something went wrong not sure what but pls restart O__- \n");
     }
     printf("%d \n", priority);
     myjob.priority = priority;
 
-    printf("you asked the printer %s to print %d copies with %d stars \n", myjob.printerId, myjob.pages, myjob.priority);
+    printf("you asked the printer %s to print %d copies with %d stars \n", myjob.printerId, myjob.pages,
+           myjob.priority);
 
 
     int sock = 0;
@@ -103,22 +104,22 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    while(1){
-       // for (int i = 0; i < myjob.pages; ++i) {
+    //while (1) {
+         for (int i = 0; i < 2; ++i) {
 
-            send(sock, &myjob, sizeof(struct job), 0);
-            printf("%d, %d, %d, %s \n", sock, myjob.priority, myjob.pages, myjob.printerId);
-            fflush(stdout);
-            int time = rand() % 20 + 1;
-            printf("sleeping for %d \n", time);
-            sleep(time);
+        send(sock, &myjob, sizeof(struct job), 0);
+        printf("%d, %d, %d, %s \n", sock, myjob.priority, myjob.pages, myjob.printerId);
+        fflush(stdout);
+        int time = rand() % 20 + 1;
+        printf("sleeping for %d \n", time);
+        sleep(time);
 
-            //close(sock);
-            //breakout of loop
-        //}
+        //close(sock);
+        //breakout of loop
+         }
 
 
-    }
+    //}
 
 
     return 0;
