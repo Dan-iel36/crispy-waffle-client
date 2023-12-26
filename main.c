@@ -5,11 +5,36 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <time.h>
 
 #include "job.h"
 
 #define PORT 8080
 #define SERVER_ADDRESS "127.0.0.1"
+
+// Function to generate a random priority level between 1 and 3
+int randomPriority() {
+    srand(time(NULL));
+    int priority = rand() % 3 + 1;
+    printf("%d \n", priority);
+    return priority;
+}
+
+// Function to randomly select a printer from the given IP addresses
+void randomPrinter(char *printer) {
+    char *ipArray[3];
+    ipArray[0] = "123.0.213.0";
+    ipArray[1] = "123.0.213.1";
+    ipArray[2] = "123.0.213.2";
+
+    int userPrinter = rand() % 3;
+    if (strlen(ipArray[userPrinter]) < 16) {
+        strcpy(printer, ipArray[userPrinter]);
+        printf("%s : %d \n", printer, userPrinter);
+    } else {
+        printf("Error: Printer ID too long\n");
+    }
+}
 
 
 int main() {
@@ -17,110 +42,72 @@ int main() {
     /*
      * This is the client side
      * the user sends printer option
-     * nb of pages to print
+     * nb of pages to print and
      * priority
      */
     struct job myjob;
     char printer[16];
-    int userPrinter;
     int pages;
-    int priority;
-    int rest = 0;
-
-    char *ipArray[4];
-    ipArray[1] = "123.0.213.0";
-    ipArray[2] = "123.0.213.1";
-    ipArray[3] = "123.0.213.2";
 
 
-    printf("select printer 1 - 3. 0 exists the program \n");
-    scanf("%d", &userPrinter);
-    if (userPrinter == 0) {
-        printf("app outed");
-    } else if (userPrinter == 1) {
-        strcpy(printer, ipArray[1]);
-    } else if (userPrinter == 2) {
-        strcpy(printer, ipArray[2]);
-    } else if (userPrinter == 3) {
-        strcpy(printer, ipArray[3]);
-    } else {
-        printf("something went wrong not sure what but pls restart O__- \n");
-    }
-    printf("%s \n", printer);
-    strcpy(myjob.printerId, printer);
-
-    printf("select number of pages 1 - 10. 0 exists the program \n");
-    scanf("%d", &pages);
-    if (pages == 0) {
-        printf("app outed \n");
-    } else if (pages >= 1 && pages <= 10) {
-        pages = pages;
-    } else {
-        printf("something went wrong not sure what but pls restart O__- \n");
-    }
+    // Generate a random number of pages between 1 and 10
+    srand(time(NULL));
+    pages = rand() % 10 + 1;
     printf("%d \n", pages);
     myjob.pages = pages;
-
-    printf("select priority of pages 1 - 2. 0 exists the program \n");
-    scanf("%d", &priority);
-    if (priority == 0) {
-        printf("app outed \n");
-    } else if (priority > 0 && priority < 3) {
-        priority = priority;
-    } else {
-        printf("something went wrong not sure what but pls restart O__- \n");
-    }
-    printf("%d \n", priority);
-    myjob.priority = priority;
-
-    printf("you asked the printer %s to print %d copies with %d stars \n", myjob.printerId, myjob.pages,
-           myjob.priority);
-
 
     int sock = 0;
     struct sockaddr_in serv_addr;
 
-    // Création du socket client
+    // Create a client socket
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Échec de la création du socket client");
         exit(EXIT_FAILURE);
     }
 
-    //Sockets et TCP/IP
+    // Set up the socket address structure
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(PORT);
 
-    // Convertir l'adresse IPv4 et affecter au socket client
+    // Convert the IPv4 address and assign it to the client socket
     if (inet_pton(AF_INET, SERVER_ADDRESS,
                   &serv_addr.sin_addr) <= 0) {
         perror("Adresse invalide / Adresse non supportée");
         exit(EXIT_FAILURE);
     }
 
-    // Connexion au serveur
+    // Connect to the server
     if (connect(sock, (struct sockaddr *) &serv_addr,
                 sizeof(serv_addr)) < 0) {
         perror("Connexion échouée");
         exit(EXIT_FAILURE);
     }
 
-    //while (1) {
-         for (int i = 0; i < 2; ++i) {
+    // Loop to send multiple print jobs
+    for (int i = 0; i < myjob.pages; ++i) {
+        // Select a random printer
+        randomPrinter(myjob.printerId);
 
+        // Assign a random priority
+        myjob.priority = randomPriority();
+
+        // Send the print job to the server
         send(sock, &myjob, sizeof(struct job), 0);
-        printf("%d, %d, %d, %s \n", sock, myjob.priority, myjob.pages, myjob.printerId);
+
+        printf("sockID : %d, priority : %d, pages : %d / %d, printerId : %s \n", sock, myjob.priority, i + 1, myjob.pages,
+               myjob.printerId);
+
         fflush(stdout);
+
         int time = rand() % 20 + 1;
         printf("sleeping for %d \n", time);
+
+        // Sleep for a random amount of time before sending the next print job
         sleep(time);
+    }
 
-        //close(sock);
-        //breakout of loop
-         }
-
-
-    //}
-
+    // Close the socket
+    close(sock);
 
     return 0;
 }
